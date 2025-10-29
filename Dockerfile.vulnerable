@@ -1,0 +1,78 @@
+# ==========================================
+# ⚠️ DOCKERFILE VULNERABLE - SOLO PARA DEMOSTRACIÓN ⚠️
+# ==========================================
+# Este Dockerfile crea una imagen VULNERABLE a propósito
+# para demostrar qué pasa cuando NO se aplican buenas prácticas
+#
+# ❌ NUNCA USAR EN PRODUCCIÓN ❌
+# ==========================================
+
+# STAGE 1: BUILD
+FROM node:20-alpine AS builder
+
+WORKDIR /app
+
+# Copiamos archivos de dependencias
+COPY package*.json ./
+
+# Instalamos dependencias
+RUN npm install --production=false
+
+# ⚠️ VULNERABILIDAD #1: Copiar TODO el código (incluyendo archivos sensibles)
+# En una imagen segura, usaríamos .dockerignore para excluir archivos
+COPY . .
+
+# Construimos la aplicación
+RUN npm run build
+
+# ==========================================
+# STAGE 2: PRODUCTION - VULNERABLE
+# ==========================================
+FROM nginx:alpine
+
+# ⚠️ VULNERABILIDAD #2: Copiar archivos de build Y archivos sensibles
+# Copiamos los archivos construidos
+COPY --from=builder /app/dist /usr/share/nginx/html
+
+# ⚠️ VULNERABILIDAD #3: Copiar archivos de configuración expuestos
+COPY --from=builder /app/package.json /usr/share/nginx/html/
+COPY --from=builder /app/package-lock.json /usr/share/nginx/html/
+COPY --from=builder /app/tsconfig.json /usr/share/nginx/html/
+COPY --from=builder /app/vite.config.ts /usr/share/nginx/html/
+
+# ⚠️ VULNERABILIDAD #4: Copiar código fuente completo
+COPY --from=builder /app/src /usr/share/nginx/html/src
+
+# ⚠️ VULNERABILIDAD #5: Copiar node_modules completo
+COPY --from=builder /app/node_modules /usr/share/nginx/html/node_modules
+
+# ⚠️ VULNERABILIDAD #6: Usar configuración VULNERABLE de Nginx
+COPY nginx-vulnerable.conf /etc/nginx/conf.d/default.conf
+
+# Exponemos el puerto 80
+EXPOSE 80
+
+# Nginx se inicia automáticamente
+# CMD ["nginx", "-g", "daemon off;"]
+
+# ==========================================
+# RESUMEN DE LO QUE ESTÁ EXPUESTO:
+# ==========================================
+# ✗ /dist/*                    → Archivos compilados (OK)
+# ✗ /package.json              → Dependencias visibles
+# ✗ /package-lock.json         → Versiones exactas de dependencias
+# ✗ /tsconfig.json             → Configuración TypeScript
+# ✗ /vite.config.ts            → Configuración de build
+# ✗ /src/**/*.tsx              → Código fuente completo
+# ✗ /.git/                     → Repositorio Git completo
+# ✗ /.env                      → Variables de entorno (si existe)
+# ✗ /node_modules/             → Dependencias completas
+# ✗ /Dockerfile                → Receta de la imagen
+# ✗ /docker-compose.yml        → Orquestación
+# ✗ /README.md                 → Documentación
+# ==========================================
+#
+# COMPARACIÓN DE TAMAÑOS:
+# - Imagen segura:     ~25 MB (solo /dist + nginx)
+# - Imagen vulnerable: ~400 MB (todo incluido)
+# ==========================================

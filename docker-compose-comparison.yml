@@ -1,0 +1,54 @@
+# ==========================================
+# Docker Compose para Comparativa de Seguridad
+# ==========================================
+# Este archivo levanta DOS versiones de la aplicación:
+# 1. Versión SEGURA (puerto 8080)
+# 2. Versión VULNERABLE (puerto 8081)
+#
+# Uso:
+#   docker-compose -f docker-compose-comparison.yml up -d
+#   ./test-security.sh http://localhost:8080  # Versión segura
+#   ./test-security.sh http://localhost:8081  # Versión vulnerable
+# ==========================================
+
+version: '3.8'
+
+services:
+  # ==========================================
+  # APLICACIÓN SEGURA ✅
+  # ==========================================
+  todo-secure:
+    container_name: todo-front-secure
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:80"
+    restart: unless-stopped
+    labels:
+      - "description=Versión SEGURA con todas las protecciones"
+      - "security=HIGH"
+    networks:
+      - demo-network
+
+  # ==========================================
+  # APLICACIÓN VULNERABLE ❌
+  # ==========================================
+  todo-vulnerable:
+    container_name: todo-front-vulnerable
+    build:
+      context: .
+      dockerfile: Dockerfile.vulnerable
+    ports:
+      - "8081:80"
+    restart: unless-stopped
+    labels:
+      - "description=Versión VULNERABLE para demostración"
+      - "security=CRITICAL"
+      - "warning=NUNCA USAR EN PRODUCCIÓN"
+    networks:
+      - demo-network
+
+networks:
+  demo-network:
+    driver: bridge

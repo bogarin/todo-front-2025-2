@@ -1,0 +1,52 @@
+# ==========================================
+# DOCKERIGNORE - Archivos excluidos de la imagen Docker
+# ==========================================
+# Esto reduce el tamaño del contexto de build y mejora el rendimiento
+
+# Dependencias (se instalan en el contenedor)
+node_modules
+npm-debug.log
+yarn-error.log
+package-lock.json
+yarn.lock
+
+# Archivos de build (se generan en el contenedor)
+dist
+build
+.vite
+
+# Git
+.git
+.gitignore
+.github
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+*~
+
+# Sistema operativo
+.DS_Store
+Thumbs.db
+
+# Testing
+coverage
+.nyc_output
+
+# Ambiente
+.env
+.env.local
+.env.development
+.env.test
+.env.production
+
+# Docker
+Dockerfile
+.dockerignore
+docker-compose.yml
+
+# Documentación
+README.md
+docs
