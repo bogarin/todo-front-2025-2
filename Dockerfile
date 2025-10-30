@@ -16,15 +16,17 @@ RUN npm install --production=false
 # Copiamos todo el código fuente
 COPY . .
 
-# ARGs para variables de Keycloak que Vite necesita en build time
+# ARGs para variables de Keycloak y API que Vite necesita en build time
 ARG VITE_KEYCLOAK_URL
 ARG VITE_KEYCLOAK_REALM
 ARG VITE_KEYCLOAK_CLIENT_ID
+ARG VITE_API_BASE_URL
 
 # Las convertimos en ENVs para que Vite las vea durante el build
 ENV VITE_KEYCLOAK_URL=${VITE_KEYCLOAK_URL}
 ENV VITE_KEYCLOAK_REALM=${VITE_KEYCLOAK_REALM}
 ENV VITE_KEYCLOAK_CLIENT_ID=${VITE_KEYCLOAK_CLIENT_ID}
+ENV VITE_API_BASE_URL=${VITE_API_BASE_URL}
 
 # Construimos la aplicación para producción
 # Vite generará los archivos optimizados en /app/dist con las variables horneadas
