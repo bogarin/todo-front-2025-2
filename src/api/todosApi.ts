@@ -26,7 +26,7 @@
  * PATRÓN: Repository Pattern / Service Layer
  * ============================================================================
  */
-
+import keycloak from '../auth/Keycloak';
 import type { CreateTodoDto, Todo, UpdateTodoDto } from '../types/todo.types';
 
 // ============================================================================
@@ -46,13 +46,17 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080
  */
 export const fetchAllTodos = async (): Promise<Todo[]> => {
   // Hace la petición GET al endpoint /todos
-  const response = await fetch(`${API_BASE_URL}/todos`);
-  
+  const response = await fetch(`${API_BASE_URL}/todos`, {
+    headers: {
+      ...(keycloak.authenticated && keycloak.token ? { Authorization: `Bearer ${keycloak.token}` } : {}),
+    },
+  });
+
   // Verifica si la respuesta es exitosa (status 200-299)
   if (!response.ok) {
     throw new Error(`Error ${response.status}: ${response.statusText}`);
   }
-  
+
   // Parsea y devuelve el JSON (array de tareas)
   return await response.json();
 };
@@ -66,12 +70,16 @@ export const fetchAllTodos = async (): Promise<Todo[]> => {
  */
 export const searchTodos = async (query: string): Promise<Todo[]> => {
   // encodeURIComponent asegura que caracteres especiales se codifiquen correctamente
-  const response = await fetch(`${API_BASE_URL}/todos/search?q=${encodeURIComponent(query)}`);
-  
+  const response = await fetch(`${API_BASE_URL}/todos/search?q=${encodeURIComponent(query)}`, {
+    headers: {
+      ...(keycloak.authenticated && keycloak.token ? { Authorization: `Bearer ${keycloak.token}` } : {}),
+    },
+  });
+
   if (!response.ok) {
     throw new Error(`Error ${response.status}: ${response.statusText}`);
   }
-  
+
   return await response.json();
 };
 
@@ -87,6 +95,7 @@ export const createTodo = async (todoData: CreateTodoDto): Promise<Todo> => {
     method: 'POST',                                    // Método HTTP POST para crear
     headers: {
       'Content-Type': 'application/json',              // Indica que enviamos JSON
+      ...(keycloak.authenticated && keycloak.token ? { Authorization: `Bearer ${keycloak.token}` } : {}),
     },
     body: JSON.stringify(todoData)                     // Convierte el objeto a JSON
   });
@@ -114,6 +123,7 @@ export const updateTodo = async (id: number, todoData: UpdateTodoDto): Promise<T
     method: 'PUT',                                     // Método HTTP PUT para actualizar
     headers: {
       'Content-Type': 'application/json',
+      ...(keycloak.authenticated && keycloak.token ? { Authorization: `Bearer ${keycloak.token}` } : {}),
     },
     body: JSON.stringify(todoData)                     // Envía los datos actualizados
   });
@@ -135,7 +145,10 @@ export const updateTodo = async (id: number, todoData: UpdateTodoDto): Promise<T
  */
 export const deleteTodo = async (id: number): Promise<void> => {
   const response = await fetch(`${API_BASE_URL}/todos/delete/${id}`, {
-    method: 'DELETE'                                   // Método HTTP DELETE para eliminar
+    method: 'DELETE',                                   // Método HTTP DELETE para eliminar
+    headers: {
+      ...(keycloak.authenticated && keycloak.token ? { Authorization: `Bearer ${keycloak.token}` } : {}),
+    },
   });
 
   if (!response.ok) {
@@ -157,7 +170,7 @@ export const deleteTodo = async (id: number): Promise<void> => {
 export const deleteMultipleTodos = async (ids: number[]): Promise<void> => {
   // Crea un array de promesas (una por cada tarea a eliminar)
   const deletePromises = ids.map(id => deleteTodo(id));
-  
+
   // Espera a que TODAS las promesas se completen
   // Si alguna falla, Promise.all lanza un error
   await Promise.all(deletePromises);

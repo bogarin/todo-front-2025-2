@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import keycloak from '../auth/keycloak';
+import keycloak from '../auth/Keycloak';
 import type { AuthContextType } from './authContext';
 import { AuthContext } from './authContext';
 

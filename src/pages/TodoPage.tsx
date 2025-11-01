@@ -28,6 +28,7 @@
 import { AlertCircle, Loader, Search, Trash2, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import AddTodoForm from '../components/AddTodoForm';
+import LogoutButton from '../components/LogoutButton';
 import TodoList from '../components/TodoList';
 import { useTodos } from '../hooks/useTodos';
 import type { FilterType } from '../types/todo.types';
@@ -120,7 +121,11 @@ export default function TodoPage() {
         {/* ============================================================
             SECCIÓN: HEADER - Título y estado de conexión
             ============================================================ */}
-        <div className="text-center mb-8">
+        <div className="text-center mb-8 relative">
+          {/* Botón de logout arriba a la derecha */}
+          <div className="absolute top-0 right-0">
+            <LogoutButton />
+          </div>
           {/* DISEÑO: Título principal */}
           <h1 className="text-4xl font-bold text-gray-800 mb-2">TODO App</h1>
           <p className="text-gray-600">Organiza tus tareas diarias</p>
